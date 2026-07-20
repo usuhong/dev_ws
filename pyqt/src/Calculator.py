@@ -22,6 +22,8 @@ class WindowClass(QMainWindow,from_class):
         self.key='0'
         self.lastResult='0'
 
+        self.hasDot=False
+
         self.lineEdit_1.setReadOnly(True)
         self.lineEdit_1.setAlignment(Qt.AlignmentFlag.AlignRight)
         self.lineEdit_2.setReadOnly(True)
@@ -45,6 +47,8 @@ class WindowClass(QMainWindow,from_class):
         self.Button_div.clicked.connect(lambda: self.func('/'))
         self.Button_backs.clicked.connect(lambda: self.func('<'))
         self.Button_clear.clicked.connect(lambda: self.func('C'))
+        self.Button_dot.clicked.connect(lambda: self.func('.'))
+        
 
         self.Button0.setFocusPolicy(Qt.FocusPolicy.NoFocus)
         self.Button1.setFocusPolicy(Qt.FocusPolicy.NoFocus)
@@ -62,6 +66,7 @@ class WindowClass(QMainWindow,from_class):
         self.Button_div.setFocusPolicy(Qt.FocusPolicy.NoFocus)
         self.Button_backs.setFocusPolicy(Qt.FocusPolicy.NoFocus)
         self.Button_clear.setFocusPolicy(Qt.FocusPolicy.NoFocus)
+        self.Button_dot.setFocusPolicy(Qt.FocusPolicy.NoFocus)
 
     # 키 입력 처리    
     def keyPressEvent(self, event):
@@ -71,13 +76,13 @@ class WindowClass(QMainWindow,from_class):
         elif text in "+-*/":
             self.appendOperator(text)
         elif event.key()==Qt.Key.Key_Enter or Qt.Key.Key_Return:
-            print(event.key())
+            print("enter")
             self.calculate()
         elif event.key()==Qt.Key.Key_Backspace:
             print("backspace")
             self.back()
         elif event.key()==Qt.Key.Key_Escape:
-            print(event.key())
+            print("Escape")
             self.clear()
 
     def func(self,key):
@@ -91,15 +96,18 @@ class WindowClass(QMainWindow,from_class):
             self.back()
         elif key=="C":
             self.clear()
+        elif key=='.':
+            self.appendDot()
 
     def appendDigit(self, key):
         self.expression+=key
         self.lineEdit_1.setText(self.expression)
 
     def appendOperator(self,key):
+        self.hasDot=False
         if self.expression=='' and self.lastResult=='0':
-            self.lineEdit_1.setText("잘못된 수식입니다!")
-            return
+            self.expression='0'
+        
         elif self.expression=='' and self.lastResult!='0':
             self.expression=self.lastResult
 
@@ -122,12 +130,17 @@ class WindowClass(QMainWindow,from_class):
             self.lineEdit_1.setText("0으로 나눌 수 없습니다!")
             self.expression = ''
             return
+        except Exception:
+            self.lineEdit_1.setText('잘못된 수식입니다!')
+            return
         self.lineEdit_2.setText(self.value)
         self.lastResult=self.value
         self.expression=''
         self.lineEdit_1.clear()
 
     def back(self):
+        if self.expression[-1]=='.':    #소수점을 지울 때 hasDot 변수 동기화
+            self.hasDot=False
         self.expression=self.expression[:-1]
         self.lineEdit_1.setText(self.expression)
     
@@ -135,9 +148,21 @@ class WindowClass(QMainWindow,from_class):
         self.expression=''
         self.value='0'
         self.lastResult='0'
+        self.hasDot=False
         self.lineEdit_2.setText(self.value)
         self.lineEdit_1.setText(self.expression)
-
+    
+    def appendDot(self):
+        print(self.hasDot)
+        if self.hasDot==True:
+            self.lineEdit_1.setText("이미 소수점이 있습니다")
+            return
+        if self.expression == '' or self.expression[-1] in '+-*/':
+            self.expression += '0.'
+        else:
+            self.expression += '.'
+        self.hasDot=True
+        self.lineEdit_1.setText(self.expression)
 
 
 
