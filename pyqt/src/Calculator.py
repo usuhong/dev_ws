@@ -45,7 +45,41 @@ class WindowClass(QMainWindow,from_class):
         self.Button_div.clicked.connect(lambda: self.func('/'))
         self.Button_backs.clicked.connect(lambda: self.func('<'))
         self.Button_clear.clicked.connect(lambda: self.func('C'))
-    
+
+        self.Button0.setFocusPolicy(Qt.FocusPolicy.NoFocus)
+        self.Button1.setFocusPolicy(Qt.FocusPolicy.NoFocus)
+        self.Button2.setFocusPolicy(Qt.FocusPolicy.NoFocus)
+        self.Button3.setFocusPolicy(Qt.FocusPolicy.NoFocus)
+        self.Button4.setFocusPolicy(Qt.FocusPolicy.NoFocus)
+        self.Button5.setFocusPolicy(Qt.FocusPolicy.NoFocus)
+        self.Button6.setFocusPolicy(Qt.FocusPolicy.NoFocus)
+        self.Button7.setFocusPolicy(Qt.FocusPolicy.NoFocus)
+        self.Button8.setFocusPolicy(Qt.FocusPolicy.NoFocus)
+        self.Button9.setFocusPolicy(Qt.FocusPolicy.NoFocus)
+        self.Button_equl.setFocusPolicy(Qt.FocusPolicy.NoFocus)
+        self.Button_plus.setFocusPolicy(Qt.FocusPolicy.NoFocus)
+        self.Button_minus.setFocusPolicy(Qt.FocusPolicy.NoFocus)
+        self.Button_div.setFocusPolicy(Qt.FocusPolicy.NoFocus)
+        self.Button_backs.setFocusPolicy(Qt.FocusPolicy.NoFocus)
+        self.Button_clear.setFocusPolicy(Qt.FocusPolicy.NoFocus)
+
+    # 키 입력 처리    
+    def keyPressEvent(self, event):
+        text=event.text()
+        if text.isdigit():
+            self.appendDigit(text)
+        elif text in "+-*/":
+            self.appendOperator(text)
+        elif event.key()==Qt.Key.Key_Enter or Qt.Key.Key_Return:
+            print(event.key())
+            self.calculate()
+        elif event.key()==Qt.Key.Key_Backspace:
+            print("backspace")
+            self.back()
+        elif event.key()==Qt.Key.Key_Escape:
+            print(event.key())
+            self.clear()
+
     def func(self,key):
         if key.isdigit():
             self.appendDigit(key)
@@ -53,8 +87,10 @@ class WindowClass(QMainWindow,from_class):
             self.appendOperator(key)
         elif key=='=':
             self.calculate()
-        else:
-            self.modify(key)
+        elif key=="<":
+            self.back()
+        elif key=="C":
+            self.clear()
 
     def appendDigit(self, key):
         self.expression+=key
@@ -66,6 +102,7 @@ class WindowClass(QMainWindow,from_class):
             return
         elif self.expression=='' and self.lastResult!='0':
             self.expression=self.lastResult
+
         lastInput=self.expression[-1]        #마지막 입력을 불러옴
 
         if lastInput.isdigit():
@@ -90,16 +127,15 @@ class WindowClass(QMainWindow,from_class):
         self.expression=''
         self.lineEdit_1.clear()
 
-    def modify(self,key):
-        if key=='C':
-            self.expression=''
-            self.value='0'
-            self.lastResult='0'
-            self.lineEdit_2.setText(self.value)
-        elif key=='<':
-            self.expression=self.expression[:-1]
-        
-
+    def back(self):
+        self.expression=self.expression[:-1]
+        self.lineEdit_1.setText(self.expression)
+    
+    def clear(self):
+        self.expression=''
+        self.value='0'
+        self.lastResult='0'
+        self.lineEdit_2.setText(self.value)
         self.lineEdit_1.setText(self.expression)
 
 
