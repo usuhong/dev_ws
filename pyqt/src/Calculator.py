@@ -100,7 +100,10 @@ class WindowClass(QMainWindow,from_class):
             self.appendDot()
 
     def appendDigit(self, key):
-        self.expression+=key
+        if self.expression=='0':
+            self.expression=key
+        else:
+            self.expression+=key
         self.lineEdit_1.setText(self.expression)
 
     def appendOperator(self,key):
@@ -136,6 +139,7 @@ class WindowClass(QMainWindow,from_class):
         self.lineEdit_2.setText(self.value)
         self.lastResult=self.value
         self.expression=''
+        self.hasDot=False
         self.lineEdit_1.clear()
 
     def back(self):
