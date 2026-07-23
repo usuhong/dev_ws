@@ -1,13 +1,16 @@
 #include <WiFi.h>
 #include <AsyncTCP.h>
 #include <ESPAsyncWebServer.h>
+#include <ESP32Servo.h>
 
+Servo servo;
 
 const char *ssid="addinedu_201class_2-2.4G";
 const char *pw="201class2!";
-const int LED1=21,LED2=22,LED3=23;
+
 
 AsyncWebServer server(80);
+const char *INPUT_PARAM1="degree";
 
 const char html[] PROGMEM= R"rawliteral(
 <!DOCTYPE html>
@@ -15,22 +18,29 @@ const char html[] PROGMEM= R"rawliteral(
   <body>
     <center>
       <h1>Hello, ESP32 Async Web Server!</h1>
-      <div> LED 21: <input type="checkbox" onchange="setLED(this, 1)" /></div>
-      <div> LED 22: <input type="checkbox" onchange="setLED(this, 2)" /></div>
-      <div> LED 23: <input type="checkbox" onchange="setLED(this, 3)" /></div>
-      <script>
-        function setLED(element, no){
-            var req=new XMLHttpRequest();
-            if (element.checked){
-                req.open("GET", "/on" + no.toString(), true);
-            }
-            else{
-                req.open("GET", "/off" + no.toString(), true);
-            }
-            req.send()
-        }
-      </script>
+      <form action="/get">
+        Servo Degree:
+        <input type="text" name="degree">
+        <input type="submit" value="Submit">
+    </form>
+    <div>
+        Phtoresistor:
+        <div id="sensor">None</div>
+    </div>
     <center>
+        <script>
+            setInterval(updateSesnorValue,100);
+            function updateSesnorValue(){
+                var xhttp= new XMLHttpRequest();
+                xhttp.onreadystatechange=function(){
+                if(this.readyState==4 && this.status==200){
+                    document.getElementById("sensor").innerHTML=this.responseText;
+                }
+            };
+            xhttp.open("GET","/sensor",true);
+            xhttp.send();
+            }
+        </script>
   </body>
 </html>
 )rawliteral";
@@ -43,9 +53,6 @@ String processor(const String& var){
 
 void setup() {
   
-  pinMode(LED1,OUTPUT);
-  pinMode(LED2,OUTPUT);
-  pinMode(LED3,OUTPUT);
   servo.attach(5);
 
   Serial.begin(115200);
@@ -68,43 +75,19 @@ void setup() {
     req->send_P(200,"text_html",html,processor);
   });
 
-  //led1 on off
-  server.on("/on1",HTTP_GET, [] (AsyncWebServerRequest *req){
-    digitalWrite(LED1,HIGH);
-    Serial.println("HIGH");
+  server.on("/get",HTTP_GET, [] (AsyncWebServerRequest *req){
+    String inputMessage=req->getParam(INPUT_PARAM1)->value();
+    Serial.println(inputMessage);
+    float degree=inputMessage.toFloat();
+    servo.write(degree);
     req->send_P(200,"text_html",html,processor);
   });
 
-  server.on("/off1",HTTP_GET, [] (AsyncWebServerRequest *req){
-    digitalWrite(LED1,LOW);
-    Serial.println("LOW");
-    req->send_P(200,"text_html",html,processor);
-  });
-
-  // led2 on off
-  server.on("/on2",HTTP_GET, [] (AsyncWebServerRequest *req){
-    digitalWrite(LED2,HIGH);
-    Serial.println("HIGH");
-    req->send_P(200,"text_html",html,processor);
-  });
-
-  server.on("/off2",HTTP_GET, [] (AsyncWebServerRequest *req){
-    digitalWrite(LED2,LOW);
-    Serial.println("LOW");
-    req->send_P(200,"text_html",html,processor);
-  });
-
-  // led3 on off
-  server.on("/on3",HTTP_GET, [] (AsyncWebServerRequest *req){
-    digitalWrite(LED3,HIGH);
-    Serial.println("HIGH");
-    req->send_P(200,"text_html",html,processor);
-  });
-
-  server.on("/off3",HTTP_GET, [] (AsyncWebServerRequest *req){
-    digitalWrite(LED3,LOW);
-    Serial.println("LOW");
-    req->send_P(200,"text_html",html,processor);
+  server.on("/sensor",HTTP_GET ,[](AsyncWebServerRequest *req){
+    int sensor=analogRead(34);
+    String value=String(sensor);
+    Serial.println(value);
+    req->send(200,"text/plain",value);
   });
 
   server.begin();

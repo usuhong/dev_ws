@@ -37,8 +37,12 @@ class windowClass(QMainWindow, from_class):
         self.editMax.setText(str(max))
         self.editStep.setText(str(step))
 
+        self.slider.setRange(int(min),int(max))
+        self.slider.setSingleStep(int(step))
+
         self.btnApply.clicked.connect(self.Apply)
         self.spinBox.valueChanged.connect(self.changeSpinBox)
+        self.slider.valueChanged.connect(self.changeSlide)
 
 
     def Apply(self):
@@ -49,9 +53,18 @@ class windowClass(QMainWindow, from_class):
         self.spinBox.setRange(int(min),int(max))
         self.spinBox.setSingleStep(int(step))
 
+        self.slider.setRange(int(min),int(max))
+        self.slider.setSingleStep(int(step))
+
     def changeSpinBox(self):
-        value=self.spinBox.text()
-        self.spinBoxValue.setText(value)
+        value=self.spinBox.value()
+        self.spinBoxValue.setText(str(value))
+        self.slider.setValue(value)
+    
+    def changeSlide(self):
+        value=self.slider.value()
+        self.sliderValue.setText(str(value))
+        self.spinBox.setValue(value)
 if __name__=="__main__":
     app=QApplication(sys.argv)
     myWindows=windowClass()
